@@ -1,43 +1,115 @@
 class Environment {
-    constructor(width, height, backgroundColor) {
-      this.width = width;
-      this.height = height;
-      this.backgroundColor = backgroundColor;
-      this.obstacles = []; // Placeholder for future obstacles
+  constructor(width, height, backgroundColor, tileSize) {
+    this.width = width;
+    this.height = height;
+    this.backgroundColor = backgroundColor;
+    this.tileSize = tileSize;
+    this.tiles = this.createGrid();
+  }
+
+  // Create a grid of Tile objects
+  createGrid() {
+    let tiles = [];
+    for (let y = 0; y < this.height; y += this.tileSize) {
+      let row = [];
+      for (let x = 0; x < this.width; x += this.tileSize) {
+        row.push(new Tile(x, y, this.tileSize));
+      }
+      tiles.push(row);
     }
-  
-    // Draw the environment with the background and obstacles
-    display() {
-      background(this.backgroundColor);
-  
-      // Placeholder for obstacle rendering
-      for (let obstacle of this.obstacles) {
-        fill(100);
-        noStroke();
-        rect(obstacle.x, obstacle.y, obstacle.w, obstacle.h);
+    return tiles;
+  }
+
+  // Display the environment with the background and tiles
+  display() {
+    background(this.backgroundColor);
+
+    for (let row of this.tiles) {
+      for (let tile of row) {
+        tile.display();
       }
     }
+
+    this.displayTileInfo();
+  }
+
+  // Display tile information in the bottom-right corner
+  displayTileInfo() {
+    let tile = this.getTileAtMouse();
   
-    // Add an obstacle to the environment
-    addObstacle(x, y, w, h) {
-      this.obstacles.push({ x, y, w, h });
-    }
+    if (tile) {
+      let panelWidth = 200;
+      let panelHeight = 120;
+      let panelX = this.width - panelWidth - 20;
+      let panelY = this.height - panelHeight - 20;
   
-    // Check if a point is colliding with any obstacles
-    checkCollision(x, y) {
-      for (let obstacle of this.obstacles) {
-        if (x > obstacle.x && x < obstacle.x + obstacle.w &&
-            y > obstacle.y && y < obstacle.y + obstacle.h) {
-          return true;
-        }
+      fill(50, 50, 50, 220);
+      stroke(200);
+      strokeWeight(2);
+      rect(panelX, panelY, panelWidth, panelHeight, 10);
+  
+      fill(255);
+      noStroke();
+      textSize(16);
+      textAlign(LEFT, TOP);
+  
+      let typeText = `Type: ${tile.state}`;
+      text(typeText, panelX + 10, panelY + 10);
+  
+      if (tile.state === 'food') {
+        let foodText = `Food Level: ${tile.foodLevel.toFixed(2)}`;
+        text(foodText, panelX + 10, panelY + 40);
       }
-      return false;
-    }
   
-    // Ensure entities stay within environment boundaries
-    enforceBoundaries(entity) {
-      if (entity.x < 0 || entity.x > this.width) entity.vx *= -1;
-      if (entity.y < 0 || entity.y > this.height) entity.vy *= -1;
+      if (tile.state === 'barrier') {
+        let barrierText = `This is a barrier`;
+        text(barrierText, panelX + 10, panelY + 40);
+      }
     }
   }
   
+
+  // Get the tile under the mouse position
+  getTileAtMouse() {
+    let col = Math.floor(mouseX / this.tileSize);
+    let row = Math.floor(mouseY / this.tileSize);
+
+    if (row >= 0 && row < this.tiles.length && col >= 0 && col < this.tiles[0].length) {
+      return this.tiles[row][col];
+    }
+    return null;
+  }
+
+  // Ensure entities stay within environment boundaries
+  enforceBoundaries(entity) {
+    if (entity.x < 0 || entity.x > this.width) entity.vx *= -1;
+    if (entity.y < 0 || entity.y > this.height) entity.vy *= -1;
+  }
+
+    // Add a food tile at a specific position with a given food level
+    addFood(x, y, level) {
+        let tile = this.getTileAtPosition(x, y);
+        if (tile) {
+            tile.setFood(level);
+        }
+    }
+
+    getTileAtPosition(x, y) {
+        let col = Math.floor(x / this.tileSize);
+        let row = Math.floor(y / this.tileSize);
+
+        if (row >= 0 && row < this.tiles.length && col >= 0 && col < this.tiles[0].length) {
+            return this.tiles[row][col];
+        }
+        return null;
+    }
+
+    // Add a barrier tile at a specific position
+    addBarrier(x, y) {
+        let tile = this.getTileAtPosition(x, y);
+        if (tile) {
+            tile.setBarrier();
+        }
+    }
+
+}
