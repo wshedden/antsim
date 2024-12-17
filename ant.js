@@ -1,5 +1,5 @@
 class Ant {
-  constructor(x, y, colonyColour) {
+  constructor(x, y, colonyColour, colonyName) {
     this.x = x;
     this.y = y;
     this.vx = random(-1, 1);
@@ -8,6 +8,9 @@ class Ant {
     this.antennaeLength = 15;
     this.antennaeAngle = PI / 4; // Angle for antennae
     this.segmentColours = [this.randomColour(), this.randomColour(), colonyColour];
+    this.colonyName = colonyName; // Name of the colony
+    this.health = 100;            // Health (0 to 100)
+    this.foodLevel = 100;         // Food level (0 to 100)
   }
 
   // Function to generate a random colour for head and thorax
@@ -27,6 +30,7 @@ class Ant {
     this.vx = constrain(this.vx, -1.5, 1.5);
     this.vy = constrain(this.vy, -1.5, 1.5);
 
+    // Enforce environment boundaries
     environment.enforceBoundaries(this);
   }
 
@@ -55,7 +59,6 @@ class Ant {
     stroke(0);
     strokeWeight(1);
 
-    // Corrected antennae positions to start from the center of the head
     let headTopY = -headSize * 0.35 + 2.01;
     line(headX, headTopY, headX + this.antennaeLength * cos(-this.antennaeAngle), headTopY + this.antennaeLength * sin(-this.antennaeAngle));
     line(headX, headTopY, headX + this.antennaeLength * cos(this.antennaeAngle), headTopY + this.antennaeLength * sin(this.antennaeAngle));
@@ -65,5 +68,11 @@ class Ant {
     noStroke();
     fill(segmentColour);
     ellipse(xOffset, 0, size, size * 0.7);
+  }
+
+  // Check if the mouse is hovering over the ant
+  isMouseOver() {
+    let d = dist(mouseX, mouseY, this.x, this.y);
+    return d < 20;
   }
 }
